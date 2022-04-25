@@ -228,6 +228,14 @@ print("Recall for two batches:", np.mean(labels.reshape(-1) == np.arange(len(dat
 
 ### Bindings installation
 
+// Wenqi: conda install is the only one works for python3
+// conda install -c conda-forge hnswlib
+// pip only support python 2.7
+// python 3.6 and above can result in build error in 'pip install .' or pip3
+// python 3.5, when importing the library, faces some lib missing issue
+// python 2.7 works well
+// pip install hnswlib does not work for python 3 as well
+
 You can install from sources:
 ```bash
 apt-get install -y python-setuptools python-pip

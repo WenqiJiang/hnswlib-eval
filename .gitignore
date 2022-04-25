@@ -1,4 +1,5 @@
 hnswlib.egg-info/
+indexes/
 build/
 dist/
 tmp/
