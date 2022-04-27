@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
         # Controlling the recall by setting ef:
         # higher ef leads to better accuracy, but slower search
-        p.set_ef(256)
+        p.set_ef(128)
 
         p.set_num_threads(1)
 

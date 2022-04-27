@@ -1,5 +1,6 @@
 hnswlib.egg-info/
 indexes/
+indexes_subgraph/
 build/
 dist/
 tmp/
