@@ -33,37 +33,33 @@ def fvecs_read(fname):
 
 if __name__ == '__main__':
 
-    dbname = 'SIFT1M'
+    dbname = 'SIFT10K'
     index_path='../indexes/{}_index.bin'.format(dbname)
 
     if dbname.startswith('SIFT'):
         # SIFT1M to SIFT1000M
-        dbsize = int(dbname[4:-1])
+        dbsize = int(1e4)
         xb = mmap_bvecs('/mnt/scratch/wenqi/Faiss_experiments/bigann/bigann_base.bvecs')
         xq = mmap_bvecs('/mnt/scratch/wenqi/Faiss_experiments/bigann/bigann_query.bvecs')
-        gt = ivecs_read('/mnt/scratch/wenqi/Faiss_experiments/bigann/gnd/idx_%dM.ivecs' % dbsize)
 
-        N_VEC = int(dbsize * 1000 * 1000)
+        N_VEC = dbsize
 
         # trim xb to correct size
-        xb = xb[:dbsize * 1000 * 1000]
+        xb = xb[:dbsize]
 
         # Wenqi: load xq to main memory and reshape
         xq = xq.astype('float32').copy()
         xq = np.array(xq, dtype=np.float32)
-        gt = np.array(gt, dtype=np.int32)
 
         print("Vector shapes:")
         print("Base vector xb: ", xb.shape)
         print("Query vector xq: ", xq.shape)
-        print("Ground truth gt: ", gt.shape)
     else:
         print('unknown dataset', dbname, file=sys.stderr)
         sys.exit(1)
 
     dim = xb.shape[1] # should be 128
     nq = xq.shape[0]
-
 
     # train index if not exist
     if not os.path.exists(index_path):
@@ -100,50 +96,3 @@ if __name__ == '__main__':
         # Serializing and deleting the index:
         print("Saving index to '%s'" % index_path)
         p.save_index(index_path)
-
-        # Controlling the recall by setting ef:
-        # higher ef leads to better accuracy, but slower search
-        p.set_ef(128)
-
-        p.set_num_threads(1)
-        # Query the elements for themselves and measure recall:
-        start = time.time()
-        I, D = p.knn_query(xq, k=100)
-        end = time.time()
-        t_consume = end - start
-
-        print("Searching...")
-        print(' ' * 4, '\t', 'R@1    R@10   R@100')
-        for rank in 1, 10, 100:
-            n_ok = (I[:, :rank] == gt[:, :1]).sum()
-            print("{:.4f}".format(n_ok / float(nq)), end=' ')
-        print("Search {} vectors in {} sec\tQPS={}".format(nq, t_consume, nq / t_consume))
-
-
-    # If index exists, load the index
-    else:
-        p = hnswlib.Index(space='l2', dim=dim)  # the space can be changed - keeps the data, alters the distance function.
-
-        print("\nLoading index from {}\n".format(index_path))
-
-        # Increase the total capacity (max_elements), so that it will handle the new data
-        p.load_index(index_path, max_elements=N_VEC)
-
-        # Controlling the recall by setting ef:
-        # higher ef leads to better accuracy, but slower search
-        p.set_ef(128)
-
-        p.set_num_threads(1)
-
-        # Query the elements for themselves and measure recall:
-        start = time.time()
-        I, D = p.knn_query(xq, k=100)
-        end = time.time()
-        t_consume = end - start
-
-        print("Searching...")
-        print(' ' * 4, '\t', 'R@1    R@10   R@100')
-        for rank in 1, 10, 100:
-            n_ok = (I[:, :rank] == gt[:, :1]).sum()
-            print("{:.4f}".format(n_ok / float(nq)), end=' ')
-        print("\nSearch {} vectors in {} sec\tQPS={}".format(nq, t_consume, nq / t_consume))

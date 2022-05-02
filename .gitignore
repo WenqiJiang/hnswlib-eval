@@ -1,6 +1,9 @@
 hnswlib.egg-info/
 indexes/
 indexes_subgraph/
+.ipynb_checkpoints
+a.out
+Faiss_indexes/
 build/
 dist/
 tmp/
