@@ -33,7 +33,7 @@ def fvecs_read(fname):
 
 if __name__ == '__main__':
 
-    dbname = 'SIFT1M'
+    dbname = 'SIFT100M'
     index_path='../indexes/{}_index.bin'.format(dbname)
 
     if dbname.startswith('SIFT'):
@@ -89,7 +89,7 @@ if __name__ == '__main__':
         # By default using all available cores
         # p.set_num_threads(16)
 
-        batch_size = 1000
+        batch_size = 10000
         batch_num = int(np.ceil(N_VEC / batch_size))
         for i in range(batch_num):
             print("Adding {} th batch of {} elements".format(i, batch_size))

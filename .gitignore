@@ -4,6 +4,7 @@ indexes_subgraph/
 .ipynb_checkpoints
 a.out
 Faiss_indexes/
+MNIST/
 build/
 dist/
 tmp/
