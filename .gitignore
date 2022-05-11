@@ -5,6 +5,8 @@ indexes_subgraph/
 a.out
 Faiss_indexes/
 MNIST/
+runs/
+models/
 build/
 dist/
 tmp/
