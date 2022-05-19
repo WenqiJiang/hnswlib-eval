@@ -1,6 +1,7 @@
 hnswlib.egg-info/
 indexes/
 indexes_subgraph/
+indexes_subgraph_kmeans/
 .ipynb_checkpoints
 a.out
 Faiss_indexes/
