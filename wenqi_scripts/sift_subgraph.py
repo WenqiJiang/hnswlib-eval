@@ -33,8 +33,8 @@ def fvecs_read(fname):
 
 if __name__ == '__main__':
 
-    N_SUBGRAPH = 10
-    dbname = 'SIFT10M'
+    N_SUBGRAPH = 2
+    dbname = 'SIFT1M'
     index_path_list= ['../indexes_subgraph/{}_index_subgraph_{}.bin'.format(dbname, i) for i in range(N_SUBGRAPH)]
 
     if dbname.startswith('SIFT'):
