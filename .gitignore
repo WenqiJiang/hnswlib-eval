@@ -2,6 +2,7 @@ hnswlib.egg-info/
 indexes/
 indexes_subgraph/
 indexes_subgraph_kmeans/
+wenqi_scripts/__pycache__/
 .ipynb_checkpoints
 a.out
 Faiss_indexes/
