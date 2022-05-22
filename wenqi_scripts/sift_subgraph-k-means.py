@@ -52,8 +52,8 @@ def load_obj(dirc, name):
 
 if __name__ == '__main__':
 
-    N_SUBGRAPH = 10
-    dbname = 'SIFT10M'
+    N_SUBGRAPH = 4
+    dbname = 'SIFT1M'
     
     folder_name = dbname + '_{}_subgraphs'.format(N_SUBGRAPH)
     if not os.path.exists('../indexes_subgraph_kmeans'):
