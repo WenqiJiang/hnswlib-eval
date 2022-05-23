@@ -467,10 +467,13 @@ class HNSW_index():
             for i in range(link_count):
                 remote_server_ID_vec_ID_list.append(self.remote_links[local_ID][i])
     
+        visited_array = set() # visited remote vector IDs
         remote_results_heap = []
         for remote_server_ID, vec_ID in remote_server_ID_vec_ID_list:
-            dist = np.sum((q_data - all_vectors[vec_ID]) ** 2)
-            heapq.heappush(remote_results_heap, (-dist, remote_server_ID, vec_ID))
+            if vec_ID not in visited_array:
+                visited_array.add(vec_ID)
+                dist = np.sum((q_data - all_vectors[vec_ID]) ** 2)
+                heapq.heappush(remote_results_heap, (-dist, remote_server_ID, vec_ID))
             
         while len(remote_results_heap) > k:
             heapq.heappop(remote_results_heap)
