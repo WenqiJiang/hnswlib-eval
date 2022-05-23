@@ -536,13 +536,13 @@ class HNSW_index():
 
 if __name__ == '__main__':
     
-    N_SUBGRAPH = 4
+    N_SUBGRAPH = 32
     dim = 128
     
     """ Load hnswlib index """
     all_server_IDs = np.arange(N_SUBGRAPH)
     all_indexes = [hnswlib.Index(space='l2', dim=dim) for i in all_server_IDs]
-    parent_dir = '../indexes_subgraph_kmeans/SIFT1M_4_subgraphs'
+    parent_dir = '../indexes_subgraph_kmeans/SIFT1M_32_subgraphs'
     all_index_paths=[os.path.join(parent_dir, 'subgraph_{}.bin'.format(i)) for i in all_server_IDs]
     for i in all_server_IDs:
         print("\nLoading hnswlib index from {}\n".format(all_index_paths[i]))

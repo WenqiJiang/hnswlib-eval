@@ -52,7 +52,7 @@ def load_obj(dirc, name):
 
 if __name__ == '__main__':
 
-    N_SUBGRAPH = 4
+    N_SUBGRAPH = 32
     dbname = 'SIFT1M'
     
     folder_name = dbname + '_{}_subgraphs'.format(N_SUBGRAPH)
