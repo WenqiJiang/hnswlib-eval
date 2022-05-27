@@ -12,6 +12,7 @@ import pickle
 import os
 
 from pathlib import Path
+from sklearn.cluster import KMeans
 
 
 def save_obj(obj, dirc, name):
@@ -125,11 +126,15 @@ class HNSW_index():
         self.mult_ = None # the probability that a node is one a higher level
         self.ef_construction_ = None
         
+        # Graph partition info
+        self.centroid_vectors = None # centroids for all sub-graphs
+        
         # ground layer, all with length of cur_element_count
         self.links_count_l0 = None # a list of link_count
         self.links_l0 = None # a list of links per vector
         self.data_l0 = None # a list of vectors
-        label_l0 = None # a list of vector IDs
+        self.label_l0 = None # a list of vector IDs
+        self.vec_ID_to_local_ID = dict() # mapping from vector ID -> local storage ID (on ground layer)
         
         # upper layers, all with length of cur_element_count
         self.element_levels_ = None # the level per vector
@@ -177,7 +182,18 @@ class HNSW_index():
         print("mult_", self.mult_)
         print("ef_construction_", self.ef_construction_)
         
-    
+    def set_centroid_vectors(self, centroid_vectors):
+        """
+        Given n subgraphs, there will be n centroid vectors,
+            the centroid vector of the current sub-graph is 
+            self.centroid_vectors[self.local_server_ID]
+        Input:
+            cluster centroids: (n, dim)
+        """
+        assert centroid_vectors.shape[1] == self.dim
+        self.centroid_vectors = centroid_vectors
+        
+        
     def load_ground_layer(self, index_bin):
         """
         Get the ground layer vector ID, vectors, and links:
@@ -197,6 +213,7 @@ class HNSW_index():
         self.links_l0 = np.zeros((self.cur_element_count, self.maxM0_), dtype=int)
         self.data_l0 = np.zeros((self.cur_element_count, self.dim))
         self.label_l0 = []
+        self.vec_ID_to_local_ID = dict()
 
         data_l0_list = []
         
@@ -229,7 +246,9 @@ class HNSW_index():
             self.data_l0[i] = np.frombuffer(tmp_bytes, dtype=np.float32)
             
             tmp_bytes = data_level0[addr_label: addr_label + size_label]
-            self.label_l0.append(convertBytes(tmp_bytes, dtype='long'))
+            vec_ID = convertBytes(tmp_bytes, dtype='long')
+            self.label_l0.append(vec_ID)
+            self.vec_ID_to_local_ID[vec_ID] = i
 
 
     def load_upper_layers(self, index_bin):
@@ -321,80 +340,43 @@ class HNSW_index():
         #    each element is a tuple: (server_ID, vector_ID)
         self.remote_links = server_ID_I_list
         
-
-    def searchKnn(self, q_data, k, ef, debug=False):
+    def searchKnnGroundLayer(self, q_data, k, ef, ep_local_id):
         """
-        result a list of (distance, vec_ID) in ascending distance
+        The ground layer searching process.
+        Input:
+            query vector
+            topk
+            ef
+            entry point of the ground layer (local ID, not real vec ID)
+        Output:
+            topK results: list of (dist, serverID, vecID) in ascending distance order
+            search_path_local_ID_gnd: ground layer search path (local node ID) 
+            search_path_vec_ID_gnd: ground layer search path (vector ID)
         """
         
-        ep_node = self.enterpoint_node_
         num_elements = self.cur_element_count
-        max_level = self.maxlevel_
         links_count_l0 = self.links_count_l0
         links_l0 = self.links_l0
         data_l0 = self.data_l0
-        links = self.links
         label_l0 = self.label_l0
         dim = self.dim
         
-        currObj = ep_node
-        currVec = data_l0[currObj]
-        curdist = calculateDist(q_data, currVec)
+        search_path_local_ID_gnd = set()
+        search_path_vec_ID_gnd = set()
         
-        search_path_local_ID = set()
-        search_path_vec_ID = set()
-        
-        # search upper layers
-        for level in reversed(range(1, max_level+1)):
-            if debug:
-                print("")
-                print("level: ", level)
-            changed = True
-            while changed:
-                if debug:
-                    print("current object: ", currObj, ", current distance: ", curdist)
-                search_path_local_ID.add(currObj)
-                changed = False
-                ### Wenqi: here, assuming Node ID can be used to retrieve upper links (which is not true for indexes with ID starting from non-0)
-                if (len(links[currObj])==0):
-                    break
-                else:
-                    start_index = (level-1) * 17
-                    size = links[currObj][start_index]
-                    if debug:
-                        print("size of neighbors: ", size) 
-                    neighbors = links[currObj][(start_index+1):(start_index+17)]
-                    for i in range(size):
-                        cand = neighbors[i]
-                        currVec = data_l0[cand]
-                        dist = calculateDist(q_data, currVec)
-                        if debug:
-                            print("cand: ", cand, ", dist: ", dist)
-                        if (dist < curdist):
-                            curdist = dist
-                            currObj = cand
-                            changed = True
-                            if debug:
-                                print("changed")
-                    if debug:
-                        print("one node finish")
-                        print("")
-
-        # search in ground layer
-        if debug:
-            print("")
-            print("level: 0")
         visited_array = set() # default 0
         top_candidates = []
         candidate_set = []
-        lowerBound = curdist 
+        
+        ep_dist = calculateDist(q_data, data_l0[ep_local_id])
+        lowerBound = ep_dist 
         # By default heap queue is a min heap: https://docs.python.org/3/library/heapq.html
         # candidate_set = candidate list, min heap
         # top_candidates = dynamic list (potential results), max heap
         # compare min(candidate_set) vs max(top_candidates)
-        heapq.heappush(top_candidates, (-curdist, currObj))
-        heapq.heappush(candidate_set,(curdist, currObj))
-        visited_array.add(currObj) 
+        heapq.heappush(top_candidates, (-ep_dist, ep_local_id))
+        heapq.heappush(candidate_set,(ep_dist, ep_local_id))
+        visited_array.add(ep_local_id) 
 
         while len(candidate_set)!=0:
             current_node_pair = candidate_set[0]
@@ -402,34 +384,24 @@ class HNSW_index():
                 break
             heapq.heappop(candidate_set)
             current_node_id = current_node_pair[1]
-            search_path_local_ID.add(current_node_id)
+            search_path_local_ID_gnd.add(current_node_id)
             size = links_count_l0[current_node_id]
-            if debug:
-                print("current object: ", current_node_id)
-                print("size of neighbors: ", size)
+            
             for i in range(size):
                 candidate_id = links_l0[current_node_id][i]
                 if (candidate_id not in visited_array):
                     visited_array.add(candidate_id)
                     currVec = data_l0[candidate_id]
                     dist = calculateDist(q_data, currVec)
-                    if debug:
-                        print("current object: ", candidate_id, ", current distance: ", dist, ", lowerBound: ", lowerBound)
+                    
                     if (len(top_candidates) < ef or lowerBound > dist):
-                        if debug:
-                            print("added")
                         heapq.heappush(candidate_set, (dist, candidate_id))
                         heapq.heappush(top_candidates, (-dist, candidate_id))
                     if (len(top_candidates) > ef):
                         heapq.heappop(top_candidates)
                     if (len(top_candidates)!=0):
                         lowerBound = -top_candidates[0][0]
-                else :
-                    if debug:
-                        print("current object: ", candidate_id, ", visited already")
-            if debug:
-                print("one node finishes")
-                print("")
+                     
 
         while len(top_candidates) > k:
             heapq.heappop(top_candidates)
@@ -442,27 +414,108 @@ class HNSW_index():
             heapq.heappop(top_candidates)
         result.reverse()
             
-        for local_ID in search_path_local_ID:
-            search_path_vec_ID.add(label_l0[local_ID])
+        for local_ID in search_path_local_ID_gnd:
+            search_path_vec_ID_gnd.add(label_l0[local_ID])
 
-        return result, search_path_local_ID, search_path_vec_ID
+        return result, search_path_local_ID_gnd, search_path_vec_ID_gnd
         
-    def searchKnnPlusRemoteCache(self, q_data, k, ef, all_vectors, debug=False):
+    def searchKnn(self, q_data, k, ef, debug=False):
+        """
+        The HNSW way to search knn, from top layer all the way down to the bottom.
+        result a list of (distance, vec_ID) in ascending distance
+        """
+        
+        ep_node = self.enterpoint_node_
+        max_level = self.maxlevel_
+        links = self.links
+        data_l0 = self.data_l0
+        label_l0 = self.label_l0
+        dim = self.dim
+        
+        currObj = ep_node
+        currVec = data_l0[currObj]
+        curdist = calculateDist(q_data, currVec)
+        
+        search_path_local_ID_upper = set()
+        search_path_vec_ID_upper = set()
+        
+        # search upper layers
+        for level in reversed(range(1, max_level+1)):
+#             if debug:
+#                 print("level: ", level)
+            changed = True
+            while changed:
+#                 if debug:
+#                     print("current object: ", currObj, ", current distance: ", curdist)
+                search_path_local_ID_upper.add(currObj)
+                changed = False
+                ### Wenqi: here, assuming Node ID can be used to retrieve upper links (which is not true for indexes with ID starting from non-0)
+                if (len(links[currObj])==0):
+                    break
+                else:
+                    start_index = (level-1) * 17
+                    size = links[currObj][start_index]
+#                     if debug:
+#                         print("size of neighbors: ", size) 
+                    neighbors = links[currObj][(start_index+1):(start_index+17)]
+                    for i in range(size):
+                        cand = neighbors[i]
+                        currVec = data_l0[cand]
+                        dist = calculateDist(q_data, currVec)
+#                         if debug:
+#                             print("cand: ", cand, ", dist: ", dist)
+                        if (dist < curdist):
+                            curdist = dist
+                            currObj = cand
+                            changed = True
+                            if debug:
+                                print("changed")
+#                     if debug:
+#                         print("one node finish")
+#                         print("")
+
+        for local_ID in search_path_local_ID_upper:
+            search_path_vec_ID_upper.add(label_l0[local_ID])
+            
+        # search in ground layer
+        result, search_path_local_ID_gnd, search_path_vec_ID_gnd = \
+            self.searchKnnGroundLayer(q_data, k, ef, ep_local_id=currObj)
+
+#         search_path_local_ID = set.union(search_path_local_ID_upper, search_path_local_ID_gnd)
+#         search_path_vec_ID = set.union(search_path_vec_ID_upper, search_path_vec_ID_gnd)
+        
+        return result, search_path_local_ID_upper, search_path_vec_ID_upper, search_path_local_ID_gnd, search_path_vec_ID_gnd
+        
+    def searchKnnPlusRemoteCache(self, q_data, k, ef, all_vectors, ep_vec_id=-1, debug=False):
         """
         Seach local vectors + cached remote vectors
         Input: 
             all vectors = the entire dataset with N_TOTAL d-dimensional vectors, used to do remote search
+            ep_vec_id (entry point vector ID): if specified, start searching from ground layer using this vector ID
         Output:
             a list of local results, in asending distance
             a list of remote results (only with the vectors one hop away from local), in asending distance
             a list of merged results, in asending distance
             whether one should search remote (True/False)
+            the remote server ID
+            the entry poin vector ID on the remote server
+            the graph search path length on the local graph (gnd layer + (if searched) upper layer)
         """
-        local_results, search_path_local_ID, search_path_vec_ID = self.searchKnn(q_data, k, ef, debug=debug)
+        path_len = None # number of nodes visited in the local graph search
+        if ep_vec_id == -1: # search local
+            local_results,  search_path_local_ID_upper, search_path_vec_ID_upper, search_path_local_ID_gnd, search_path_vec_ID_gnd = \
+                self.searchKnn(q_data, k, ef, debug=debug)
+            path_len = len(search_path_local_ID_upper) + len(search_path_local_ID_gnd)
+        else:
+            ep_local_id = self.vec_ID_to_local_ID[ep_vec_id]
+            local_results, search_path_local_ID_gnd, search_path_vec_ID_gnd = \
+                self.searchKnnGroundLayer(q_data, k, ef, ep_local_id)
+            path_len = len(search_path_local_ID_gnd)
         # get the list of remote vectors that should be visited
         remote_server_ID_vec_ID_list = []
         
-        for local_ID in search_path_local_ID:
+        # only the candidates on ground layer are considered
+        for local_ID in search_path_local_ID_gnd:
             link_count = self.remote_links_count[local_ID]
             for i in range(link_count):
                 remote_server_ID_vec_ID_list.append(self.remote_links[local_ID][i])
@@ -495,9 +548,10 @@ class HNSW_index():
             search_remote = False
             remote_server_ID = -1
             
-        return results, local_results, remote_results, search_remote, remote_server_ID
+        remote_ep_vec_ID = remote_results[0][2]
         
-
+        return results, local_results, remote_results, search_remote, remote_server_ID, remote_ep_vec_ID, path_len
+        
         
     def searchKnnPlusRemote(self, q_data, k, ef, all_vectors, remote_hnswlib_indexes, remote_server_IDs, debug=False):
         """
@@ -551,6 +605,8 @@ if __name__ == '__main__':
         print("\nLoading hnswlib index from {}\n".format(all_index_paths[i]))
         all_indexes[i].load_index(all_index_paths[i])
 
+    kmeans = load_obj(parent_dir, 'kmeans')
+    
     """ Load index as python object, construct distributed index """
     for i in all_server_IDs:
         print("Constructing distributed index from {}\n".format(all_index_paths[i]))
@@ -559,6 +615,8 @@ if __name__ == '__main__':
         
         hnsw_index = HNSW_index(local_server_ID=i, dim=dim)
         hnsw_index.load_meta_info(index)
+        
+        hnsw_index.set_centroid_vectors(kmeans.cluster_centers_)
         
         ef = hnsw_index.ef_construction_
         
