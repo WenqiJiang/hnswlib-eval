@@ -1,3 +1,6 @@
+"""
+Construct hnsw-graph & test  performance
+"""
 import sys
 import os
 import time 
@@ -5,6 +8,7 @@ import time
 import hnswlib
 import numpy as np
 
+M=32
 
 def mmap_fvecs(fname):
     x = np.memmap(fname, dtype='int32', mode='r')
@@ -34,7 +38,7 @@ def fvecs_read(fname):
 if __name__ == '__main__':
 
     dbname = 'SIFT100M'
-    index_path='../indexes/{}_index.bin'.format(dbname)
+    index_path='../indexes/{}_index_M_{}.bin'.format(dbname, M)
 
     if dbname.startswith('SIFT'):
         # SIFT1M to SIFT1000M
@@ -79,7 +83,7 @@ if __name__ == '__main__':
         #
         # M - is tightly connected with internal dimensionality of the data. Strongly affects the memory consumption (~M)
         # Higher M leads to higher accuracy/run_time at fixed ef/efConstruction
-        p.init_index(max_elements=N_VEC, ef_construction=128, M=16)
+        p.init_index(max_elements=N_VEC, ef_construction=128, M=M)
 
         # Controlling the recall by setting ef:
         # higher ef leads to better accuracy, but slower search
@@ -131,19 +135,29 @@ if __name__ == '__main__':
 
         # Controlling the recall by setting ef:
         # higher ef leads to better accuracy, but slower search
-        p.set_ef(128)
+        ef_set = [1, 4, 16, 64, 256]
+        num_threads_set = [1, 32]
+        k_set = [1, 10, 100]
 
-        p.set_num_threads(1)
+        for ef in ef_set:
+            for num_threads in num_threads_set:
+                for k in k_set:
 
-        # Query the elements for themselves and measure recall:
-        start = time.time()
-        I, D = p.knn_query(xq, k=100)
-        end = time.time()
-        t_consume = end - start
+                    print("ef = {}\tnum_threads = {}".format(ef, num_threads))
+                    p.set_ef(ef)
+                    p.set_num_threads(num_threads)
 
-        print("Searching...")
-        print(' ' * 4, '\t', 'R@1    R@10   R@100')
-        for rank in 1, 10, 100:
-            n_ok = (I[:, :rank] == gt[:, :1]).sum()
-            print("{:.4f}".format(n_ok / float(nq)), end=' ')
-        print("\nSearch {} vectors in {} sec\tQPS={}".format(nq, t_consume, nq / t_consume))
+                    # Query the elements for themselves and measure recall:
+                    start = time.time()
+                    I, D = p.knn_query(xq, k=100)
+                    end = time.time()
+                    t_consume = end - start
+
+                    print("Searching...")
+                    print(' ' * 4, '\t', 'R@1    R@10   R@100')
+                    for rank in 1, 10, 100:
+                        if rank > k:
+                            break
+                        n_ok = (I[:, :rank] == gt[:, :1]).sum()
+                        print("{:.4f}".format(n_ok / float(nq)), end=' ')
+                    print("\nSearch {} vectors in {} sec\tQPS={}".format(nq, t_consume, nq / t_consume))

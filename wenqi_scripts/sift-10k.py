@@ -33,12 +33,12 @@ def fvecs_read(fname):
 
 if __name__ == '__main__':
 
-    dbname = 'SIFT10K'
+    dbsize = int(1e5)
+    dbname = 'SIFT100K'
     index_path='../indexes/{}_index.bin'.format(dbname)
 
     if dbname.startswith('SIFT'):
         # SIFT1M to SIFT1000M
-        dbsize = int(1e4)
         xb = mmap_bvecs('/mnt/scratch/wenqi/Faiss_experiments/bigann/bigann_base.bvecs')
         xq = mmap_bvecs('/mnt/scratch/wenqi/Faiss_experiments/bigann/bigann_query.bvecs')
 
@@ -85,7 +85,7 @@ if __name__ == '__main__':
         # By default using all available cores
         # p.set_num_threads(16)
 
-        batch_size = 1000
+        batch_size = 100
         batch_num = int(np.ceil(N_VEC / batch_size))
         for i in range(batch_num):
             print("Adding {} th batch of {} elements".format(i, batch_size))
