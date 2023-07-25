@@ -37,7 +37,8 @@ def fvecs_read(fname):
 
 if __name__ == '__main__':
 
-    dbname = 'SIFT100M'
+    dbname = 'SIFT1M'
+    # dbname = 'SIFT100M'
     index_path='../indexes/{}_index_M_{}.bin'.format(dbname, M)
 
     if dbname.startswith('SIFT'):
@@ -149,7 +150,7 @@ if __name__ == '__main__':
 
                     # Query the elements for themselves and measure recall:
                     start = time.time()
-                    I, D = p.knn_query(xq, k=100)
+                    I, D = p.knn_query(xq, k=10000)
                     end = time.time()
                     t_consume = end - start
 

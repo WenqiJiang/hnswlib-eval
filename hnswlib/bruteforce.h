@@ -4,6 +4,8 @@
 #include <mutex>
 #include <algorithm>
 
+#include <omp.h>
+
 namespace hnswlib {
     template<typename dist_t>
     class BruteforceSearch : public AlgorithmInterface<dist_t> {
@@ -110,6 +112,90 @@ namespace hnswlib {
             }
             return topResults;
         };
+
+
+        std::priority_queue<std::pair<dist_t, labeltype >>
+        searchKnnParallel(const void *query_data, size_t k) const {
+
+			int num_threads = omp_get_max_threads();
+			// std::cout << num_threads << std::endl;
+
+            std::priority_queue<std::pair<dist_t, labeltype >> topResultsMerged;
+			if (cur_element_count == 0) return topResultsMerged;
+
+			int count_per_thread = cur_element_count / num_threads; // last thread takes the leftover
+
+			// each thread handle a part of the 
+			#pragma omp parallel for schedule(static)
+			for (int t = 0; t < num_threads; t++) {
+
+				int count_this_thread = (t == num_threads - 1) ? cur_element_count - (num_threads - 1) * count_per_thread : count_per_thread;
+				int init_k = k <= count_this_thread ? k : count_this_thread;
+				int start_id = t * count_this_thread;
+				int end_id = start_id + count_this_thread;
+
+				// first k 
+				std::priority_queue<std::pair<dist_t, labeltype >> topResults;
+				for (int i = start_id; i < start_id + init_k; i++) {
+					dist_t dist = fstdistfunc_(query_data, data_ + size_per_element_ * i, dist_func_param_);
+					topResults.push(std::pair<dist_t, labeltype>(dist, *((labeltype *) (data_ + size_per_element_ * i +
+																						data_size_))));
+				}
+				dist_t lastdist = topResults.top().first;
+
+				// k ~ rest per thread
+				for (int i = start_id + init_k; i < end_id; i++) {
+					dist_t dist = fstdistfunc_(query_data, data_ + size_per_element_ * i, dist_func_param_);
+					if (dist <= lastdist) {
+						topResults.push(std::pair<dist_t, labeltype>(dist, *((labeltype *) (data_ + size_per_element_ * i +
+																							data_size_))));
+						if (topResults.size() > k)
+							topResults.pop();
+						lastdist = topResults.top().first;
+					}
+				}
+
+				// merge to the main queue
+				#pragma omp critical
+				{
+					while (topResults.size() > 0) {
+						topResultsMerged.push(topResults.top());
+						if (topResultsMerged.size() > k)
+							topResultsMerged.pop();
+						topResults.pop();	
+					}
+				}
+			}
+            return topResultsMerged;
+        };
+
+        // std::priority_queue<std::pair<dist_t, labeltype >>
+        // searchKnnParallel(const void *query_data, size_t k) const {
+        //     std::priority_queue<std::pair<dist_t, labeltype >> topResults;
+        //     if (cur_element_count == 0) return topResults;
+        //     for (int i = 0; i < k; i++) {
+        //         dist_t dist = fstdistfunc_(query_data, data_ + size_per_element_ * i, dist_func_param_);
+        //         topResults.push(std::pair<dist_t, labeltype>(dist, *((labeltype *) (data_ + size_per_element_ * i +
+        //                                                                             data_size_))));
+        //     }
+        //     dist_t lastdist = topResults.top().first;
+
+		// 	#pragma omp parallel for schedule(runtime)
+        //     for (int i = k; i < cur_element_count; i++) {
+        //         dist_t dist = fstdistfunc_(query_data, data_ + size_per_element_ * i, dist_func_param_);
+        //         if (dist <= lastdist) {
+		// 			#pragma omp critical 
+		// 			{
+		// 				topResults.push(std::pair<dist_t, labeltype>(dist, *((labeltype *) (data_ + size_per_element_ * i +
+		// 																					data_size_))));
+		// 				if (topResults.size() > k)
+		// 					topResults.pop();
+		// 				lastdist = topResults.top().first;
+		// 			}
+        //         }
+        //     }
+        //     return topResults;
+        // };
 
         void saveIndex(const std::string &location) {
             std::ofstream output(location, std::ios::binary);
