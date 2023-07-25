@@ -89,6 +89,7 @@ namespace hnswlib {
         }
 
 
+		// single query search, sequential 
         std::priority_queue<std::pair<dist_t, labeltype >>
         searchKnn(const void *query_data, size_t k) const {
             std::priority_queue<std::pair<dist_t, labeltype >> topResults;
@@ -113,7 +114,20 @@ namespace hnswlib {
             return topResults;
         };
 
+		// batch search, without parallelism
+        std::vector<std::priority_queue<std::pair<dist_t, labeltype >>>
+        searchKnnBatch(const void *query_data, size_t k, int batch_size) const {
 
+			std::vector<std::priority_queue<std::pair<dist_t, labeltype >>> topResultsBatch;
+
+			for (int b = 0; b < batch_size; b++) {
+				topResultsBatch.push_back(searchKnn((char*) query_data + b * data_size_, k));
+			}
+			return topResultsBatch;	
+		}
+
+
+		// single query search, with intra-query parallelism
         std::priority_queue<std::pair<dist_t, labeltype >>
         searchKnnParallel(const void *query_data, size_t k) const {
 
@@ -124,6 +138,7 @@ namespace hnswlib {
 			if (cur_element_count == 0) return topResultsMerged;
 
 			int count_per_thread = cur_element_count / num_threads; // last thread takes the leftover
+			dist_t lastdistMerged;
 
 			// each thread handle a part of the 
 			#pragma omp parallel for schedule(static)
@@ -158,10 +173,19 @@ namespace hnswlib {
 				// merge to the main queue
 				#pragma omp critical
 				{
-					while (topResults.size() > 0) {
+					while (topResultsMerged.size() < k && topResults.size() > 0) {
 						topResultsMerged.push(topResults.top());
-						if (topResultsMerged.size() > k)
-							topResultsMerged.pop();
+						topResults.pop();	
+					}
+					lastdistMerged = topResultsMerged.top().first;
+
+					while (topResults.size() > 0) {
+						if (topResults.top().first < lastdistMerged) {
+							topResultsMerged.push(topResults.top());
+							if (topResultsMerged.size() > k)
+								topResultsMerged.pop();
+							lastdistMerged = topResultsMerged.top().first;
+						}
 						topResults.pop();	
 					}
 				}
@@ -169,33 +193,31 @@ namespace hnswlib {
             return topResultsMerged;
         };
 
-        // std::priority_queue<std::pair<dist_t, labeltype >>
-        // searchKnnParallel(const void *query_data, size_t k) const {
-        //     std::priority_queue<std::pair<dist_t, labeltype >> topResults;
-        //     if (cur_element_count == 0) return topResults;
-        //     for (int i = 0; i < k; i++) {
-        //         dist_t dist = fstdistfunc_(query_data, data_ + size_per_element_ * i, dist_func_param_);
-        //         topResults.push(std::pair<dist_t, labeltype>(dist, *((labeltype *) (data_ + size_per_element_ * i +
-        //                                                                             data_size_))));
-        //     }
-        //     dist_t lastdist = topResults.top().first;
+        std::vector<std::priority_queue<std::pair<dist_t, labeltype >>>
+        searchKnnBatchParallel(const void *query_data, size_t k, int batch_size) const {
 
-		// 	#pragma omp parallel for schedule(runtime)
-        //     for (int i = k; i < cur_element_count; i++) {
-        //         dist_t dist = fstdistfunc_(query_data, data_ + size_per_element_ * i, dist_func_param_);
-        //         if (dist <= lastdist) {
-		// 			#pragma omp critical 
-		// 			{
-		// 				topResults.push(std::pair<dist_t, labeltype>(dist, *((labeltype *) (data_ + size_per_element_ * i +
-		// 																					data_size_))));
-		// 				if (topResults.size() > k)
-		// 					topResults.pop();
-		// 				lastdist = topResults.top().first;
-		// 			}
-        //         }
-        //     }
-        //     return topResults;
-        // };
+			int num_threads = omp_get_max_threads();
+			// std::cout << num_threads << std::endl;
+			// std::cout << batch_size << std::endl;
+
+			std::vector<std::priority_queue<std::pair<dist_t, labeltype >>> topResultsBatch(batch_size);
+
+			// automatically choose parallel mode: inter-query parallel and intra-query parallel,
+			//   given the batch sizes and OMP thread num avaialble
+			if (batch_size >= num_threads) {
+				// inter-query parallel
+				#pragma omp parallel for schedule(guided)
+				for (int b = 0; b < batch_size; b++) {
+					topResultsBatch.at(b) = searchKnn((char*) query_data + b * data_size_, k);
+				}
+			} else {
+				// intra-query parallel
+				for (int b = 0; b < batch_size; b++) {
+					topResultsBatch.at(b) = searchKnnParallel((char*) query_data + b * data_size_, k);
+				}
+			}
+			return topResultsBatch;	
+		}
 
         void saveIndex(const std::string &location) {
             std::ofstream output(location, std::ios::binary);
