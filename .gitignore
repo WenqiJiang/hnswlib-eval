@@ -1,6 +1,7 @@
 hnswlib.egg-info/
 indexes/
 indexes_subgraph/
+FPGA_indexes/
 indexes_subgraph_kmeans/
 wenqi_scripts/__pycache__/
 .ipynb_checkpoints

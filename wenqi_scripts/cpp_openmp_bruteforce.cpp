@@ -1,4 +1,4 @@
-// Compile: g++ -o2 -fopenmp cpp_search_bruteforce.cpp -o a.out
+// Compile: g++ -o2 -fopenmp cpp_openmp_bruteforce.cpp -o a.out
 
 // Adjusted from examples/searchKnnCloserFirst_test.cpp, i.e., the official C++ search demo
 
@@ -39,7 +39,7 @@ batch_priority_queue_to_vector(std::vector<std::priority_queue<std::pair<float, 
 
 void test() {
 
-    int D = 128;
+    int D = 1024;
     size_t n_db_vec = 32768;
     size_t nq = 100;
     size_t topK = 100;
