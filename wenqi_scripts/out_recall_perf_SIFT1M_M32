@@ -1,0 +1,127 @@
+Vector shapes:
+Base vector xb:  (1000000, 128)
+Query vector xq:  (10000, 128)
+Ground truth gt:  (10000, 1000)
+
+Loading index from ../indexes/SIFT1M_index_M_32.bin
+
+ef = 8 k = 1 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.8115 
+Search 10000 vectors in 0.35877060890197754 sec	QPS=27872.963258069383
+ef = 8 k = 10 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.8504 0.8504 
+Search 10000 vectors in 0.39850783348083496 sec	QPS=25093.609610263582
+ef = 8 k = 1 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.8115 
+Search 10000 vectors in 0.18497872352600098 sec	QPS=54060.27141599547
+ef = 8 k = 10 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.8504 0.8504 
+Search 10000 vectors in 0.2887442111968994 sec	QPS=34632.72894215994
+ef = 16 k = 1 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.9158 
+Search 10000 vectors in 1.1533029079437256 sec	QPS=8670.748969001941
+ef = 16 k = 10 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.9158 0.9158 
+Search 10000 vectors in 1.756192684173584 sec	QPS=5694.136008034748
+ef = 16 k = 1 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.9158 
+Search 10000 vectors in 0.41739606857299805 sec	QPS=23958.05986910274
+ef = 16 k = 10 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.9158 0.9158 
+Search 10000 vectors in 0.40075016021728516 sec	QPS=24953.202750007735
+ef = 32 k = 1 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.9692 
+Search 10000 vectors in 1.9699525833129883 sec	QPS=5076.264314536138
+ef = 32 k = 10 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.9693 0.9693 
+Search 10000 vectors in 2.836456537246704 sec	QPS=3525.525552281797
+ef = 32 k = 1 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.9692 
+Search 10000 vectors in 0.6154255867004395 sec	QPS=16248.918173217804
+ef = 32 k = 10 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.9693 0.9693 
+Search 10000 vectors in 0.6144695281982422 sec	QPS=16274.200006828925
+ef = 64 k = 1 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.9937 
+Search 10000 vectors in 3.8751602172851562 sec	QPS=2580.538465324605
+ef = 64 k = 10 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 4.876315355300903 sec	QPS=2050.728730890894
+ef = 64 k = 1 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.9937 
+Search 10000 vectors in 1.105433464050293 sec	QPS=9046.225146251803
+ef = 64 k = 10 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.1066911220550537 sec	QPS=9035.944899811473
+ef = 128 k = 1 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.9986 
+Search 10000 vectors in 5.320509672164917 sec	QPS=1879.519184471475
+ef = 128 k = 10 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.9987 0.9987 
+Search 10000 vectors in 3.0257370471954346 sec	QPS=3304.9798591285494
+ef = 128 k = 1 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.9986 
+Search 10000 vectors in 1.8046376705169678 sec	QPS=5541.278542154857
+ef = 128 k = 10 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.9987 0.9987 
+Search 10000 vectors in 1.8979127407073975 sec	QPS=5268.946135148848
+ef = 256 k = 1 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.9997 
+Search 10000 vectors in 14.970216035842896 sec	QPS=667.9930320348882
+ef = 256 k = 10 	num_threads = 1
+Searching...
+     	 R@1    R@10   R@100
+0.9997 0.9997 
+Search 10000 vectors in 9.43112301826477 sec	QPS=1060.3191137082524
+ef = 256 k = 1 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.9997 
+Search 10000 vectors in 2.7478039264678955 sec	QPS=3639.269856075314
+ef = 256 k = 10 	num_threads = 32
+Searching...
+     	 R@1    R@10   R@100
+0.9997 0.9997 
+Search 10000 vectors in 2.4949731826782227 sec	QPS=4008.0591123891463

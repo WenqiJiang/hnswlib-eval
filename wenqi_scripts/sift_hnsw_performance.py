@@ -136,21 +136,21 @@ if __name__ == '__main__':
 
         # Controlling the recall by setting ef:
         # higher ef leads to better accuracy, but slower search
-        ef_set = [1, 4, 16, 64, 256]
+        ef_set = [8, 16, 32, 64, 128, 256]
         num_threads_set = [1, 32]
-        k_set = [1, 10, 100]
+        k_set = [1, 10]
 
         for ef in ef_set:
             for num_threads in num_threads_set:
                 for k in k_set:
 
-                    print("ef = {}\tnum_threads = {}".format(ef, num_threads))
+                    print("ef = {} k = {} \tnum_threads = {}".format(ef, k, num_threads))
                     p.set_ef(ef)
                     p.set_num_threads(num_threads)
 
                     # Query the elements for themselves and measure recall:
                     start = time.time()
-                    I, D = p.knn_query(xq, k=10000)
+                    I, D = p.knn_query(xq, k=k)
                     end = time.time()
                     t_consume = end - start
 
