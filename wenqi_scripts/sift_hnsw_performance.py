@@ -136,29 +136,40 @@ if __name__ == '__main__':
 
         # Controlling the recall by setting ef:
         # higher ef leads to better accuracy, but slower search
-        ef_set = [8, 16, 32, 64, 128, 256]
-        num_threads_set = [1, 32]
-        k_set = [1, 10]
+        ef_set = [64]
+        # ef_set = [8, 16, 32, 64, 128, 256]
+        batch_size_set = [1, 4, 16, 64, 256, 1024, 10000]
+        num_threads_set = [1, 2, 4, 8, 16, 32, 0]
+        k_set = [10]
+        # k_set = [1, 10]
 
         for ef in ef_set:
-            for num_threads in num_threads_set:
-                for k in k_set:
+            for k in k_set:
+                for num_threads in num_threads_set:
+                    for batch_size in batch_size_set:
 
-                    print("ef = {} k = {} \tnum_threads = {}".format(ef, k, num_threads))
-                    p.set_ef(ef)
-                    p.set_num_threads(num_threads)
+                        print("\nef = {} k = {} \tnum_threads = {}\tbatch_size = {}".format(ef, k, num_threads, batch_size))
+                        p.set_ef(ef)
+                        p.set_num_threads(num_threads)
 
-                    # Query the elements for themselves and measure recall:
-                    start = time.time()
-                    I, D = p.knn_query(xq, k=k)
-                    end = time.time()
-                    t_consume = end - start
+                        I = np.zeros((nq, k), dtype=np.int64)
+                        D = np.zeros((nq, k), dtype=np.float32)
 
-                    print("Searching...")
-                    print(' ' * 4, '\t', 'R@1    R@10   R@100')
-                    for rank in 1, 10, 100:
-                        if rank > k:
-                            break
-                        n_ok = (I[:, :rank] == gt[:, :1]).sum()
-                        print("{:.4f}".format(n_ok / float(nq)), end=' ')
-                    print("\nSearch {} vectors in {} sec\tQPS={}".format(nq, t_consume, nq / t_consume))
+                        # Query the elements for themselves and measure recall:
+                        start = time.time()
+                        batch_num = int(np.ceil(nq / batch_size))
+                        for bid in range(0, nq, batch_size):
+                            I[bid:bid+batch_size,:], D[bid:bid+batch_size,:] = p.knn_query(xq[bid:bid+batch_size], k=k, num_threads=num_threads)
+                        # I, D = p.knn_query(xq, k=k)
+                        end = time.time()
+                        t_consume = end - start
+
+                        # print("Searching...")
+                        print(' ' * 4, '\t', 'R@1    R@10   R@100')
+                        for rank in 1, 10, 100:
+                            if rank > k:
+                                break
+                            n_ok = (I[:, :rank] == gt[:, :1]).sum()
+                            print("{:.4f}".format(n_ok / float(nq)), end=' ')
+                        print("\nSearch {} vectors in {:.2f} sec\tQPS={:.2f}\tPer-batch latency: {:.2f} ms".format(
+                            nq, t_consume, nq / t_consume, t_consume / nq * 1000 * batch_size), flush=True)
