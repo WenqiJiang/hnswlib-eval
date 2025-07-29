@@ -1,0 +1,252 @@
+Vector shapes:
+Base vector xb:  (1000000, 128)
+Query vector xq:  (10000, 128)
+Ground truth gt:  (10000, 1000)
+
+Loading index from ../indexes/SIFT1M_index_M_32.bin
+
+
+ef = 64 k = 10 	num_threads = 1	batch_size = 1
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.60 sec	QPS=6239.02	Per-batch latency: 0.16 ms
+
+ef = 64 k = 10 	num_threads = 1	batch_size = 4
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.56 sec	QPS=6397.67	Per-batch latency: 0.63 ms
+
+ef = 64 k = 10 	num_threads = 1	batch_size = 16
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.55 sec	QPS=6464.43	Per-batch latency: 2.48 ms
+
+ef = 64 k = 10 	num_threads = 1	batch_size = 64
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.55 sec	QPS=6449.51	Per-batch latency: 9.92 ms
+
+ef = 64 k = 10 	num_threads = 1	batch_size = 256
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.54 sec	QPS=6479.37	Per-batch latency: 39.51 ms
+
+ef = 64 k = 10 	num_threads = 1	batch_size = 1024
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.54 sec	QPS=6491.04	Per-batch latency: 157.76 ms
+
+ef = 64 k = 10 	num_threads = 1	batch_size = 10000
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.54 sec	QPS=6501.43	Per-batch latency: 1538.12 ms
+
+ef = 64 k = 10 	num_threads = 2	batch_size = 1
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.59 sec	QPS=6308.15	Per-batch latency: 0.16 ms
+
+ef = 64 k = 10 	num_threads = 2	batch_size = 4
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.55 sec	QPS=6471.55	Per-batch latency: 0.62 ms
+
+ef = 64 k = 10 	num_threads = 2	batch_size = 16
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 0.96 sec	QPS=10371.81	Per-batch latency: 1.54 ms
+
+ef = 64 k = 10 	num_threads = 2	batch_size = 64
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 0.92 sec	QPS=10892.17	Per-batch latency: 5.88 ms
+
+ef = 64 k = 10 	num_threads = 2	batch_size = 256
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 0.90 sec	QPS=11155.33	Per-batch latency: 22.95 ms
+
+ef = 64 k = 10 	num_threads = 2	batch_size = 1024
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 0.89 sec	QPS=11280.62	Per-batch latency: 90.78 ms
+
+ef = 64 k = 10 	num_threads = 2	batch_size = 10000
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 0.89 sec	QPS=11296.96	Per-batch latency: 885.19 ms
+
+ef = 64 k = 10 	num_threads = 4	batch_size = 1
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.62 sec	QPS=6184.98	Per-batch latency: 0.16 ms
+
+ef = 64 k = 10 	num_threads = 4	batch_size = 4
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.55 sec	QPS=6437.13	Per-batch latency: 0.62 ms
+
+ef = 64 k = 10 	num_threads = 4	batch_size = 16
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.55 sec	QPS=6448.78	Per-batch latency: 2.48 ms
+
+ef = 64 k = 10 	num_threads = 4	batch_size = 64
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 0.72 sec	QPS=13981.28	Per-batch latency: 4.58 ms
+
+ef = 64 k = 10 	num_threads = 4	batch_size = 256
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 0.69 sec	QPS=14555.37	Per-batch latency: 17.59 ms
+
+ef = 64 k = 10 	num_threads = 4	batch_size = 1024
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 0.68 sec	QPS=14790.03	Per-batch latency: 69.24 ms
+
+ef = 64 k = 10 	num_threads = 4	batch_size = 10000
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 0.67 sec	QPS=14886.28	Per-batch latency: 671.76 ms
+
+ef = 64 k = 10 	num_threads = 8	batch_size = 1
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.58 sec	QPS=6323.57	Per-batch latency: 0.16 ms
+
+ef = 64 k = 10 	num_threads = 8	batch_size = 4
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.55 sec	QPS=6463.76	Per-batch latency: 0.62 ms
+
+ef = 64 k = 10 	num_threads = 8	batch_size = 16
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.54 sec	QPS=6488.49	Per-batch latency: 2.47 ms
+
+ef = 64 k = 10 	num_threads = 8	batch_size = 64
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 0.65 sec	QPS=15412.19	Per-batch latency: 4.15 ms
+
+ef = 64 k = 10 	num_threads = 8	batch_size = 256
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.33 sec	QPS=7524.82	Per-batch latency: 34.02 ms
+
+ef = 64 k = 10 	num_threads = 8	batch_size = 1024
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.60 sec	QPS=6265.40	Per-batch latency: 163.44 ms
+
+ef = 64 k = 10 	num_threads = 8	batch_size = 10000
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.44 sec	QPS=6926.76	Per-batch latency: 1443.68 ms
+
+ef = 64 k = 10 	num_threads = 16	batch_size = 1
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 3.35 sec	QPS=2985.06	Per-batch latency: 0.34 ms
+
+ef = 64 k = 10 	num_threads = 16	batch_size = 4
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.82 sec	QPS=5480.02	Per-batch latency: 0.73 ms
+
+ef = 64 k = 10 	num_threads = 16	batch_size = 16
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.73 sec	QPS=5767.94	Per-batch latency: 2.77 ms
+
+ef = 64 k = 10 	num_threads = 16	batch_size = 64
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.71 sec	QPS=5860.43	Per-batch latency: 10.92 ms
+
+ef = 64 k = 10 	num_threads = 16	batch_size = 256
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.20 sec	QPS=8317.76	Per-batch latency: 30.78 ms
+
+ef = 64 k = 10 	num_threads = 16	batch_size = 1024
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.28 sec	QPS=7818.69	Per-batch latency: 130.97 ms
+
+ef = 64 k = 10 	num_threads = 16	batch_size = 10000
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.27 sec	QPS=7865.37	Per-batch latency: 1271.40 ms
+
+ef = 64 k = 10 	num_threads = 32	batch_size = 1
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 2.97 sec	QPS=3364.02	Per-batch latency: 0.30 ms
+
+ef = 64 k = 10 	num_threads = 32	batch_size = 4
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.61 sec	QPS=6215.73	Per-batch latency: 0.64 ms
+
+ef = 64 k = 10 	num_threads = 32	batch_size = 16
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.56 sec	QPS=6396.02	Per-batch latency: 2.50 ms
+
+ef = 64 k = 10 	num_threads = 32	batch_size = 64
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.55 sec	QPS=6432.80	Per-batch latency: 9.95 ms
+
+ef = 64 k = 10 	num_threads = 32	batch_size = 256
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.16 sec	QPS=8631.76	Per-batch latency: 29.66 ms
+
+ef = 64 k = 10 	num_threads = 32	batch_size = 1024
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.16 sec	QPS=8632.29	Per-batch latency: 118.62 ms
+
+ef = 64 k = 10 	num_threads = 32	batch_size = 10000
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.14 sec	QPS=8744.24	Per-batch latency: 1143.61 ms
+
+ef = 64 k = 10 	num_threads = 0	batch_size = 1
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 11.58 sec	QPS=863.44	Per-batch latency: 1.16 ms
+
+ef = 64 k = 10 	num_threads = 0	batch_size = 4
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 3.60 sec	QPS=2775.04	Per-batch latency: 1.44 ms
+
+ef = 64 k = 10 	num_threads = 0	batch_size = 16
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.34 sec	QPS=7476.69	Per-batch latency: 2.14 ms
+
+ef = 64 k = 10 	num_threads = 0	batch_size = 64
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.26 sec	QPS=7942.28	Per-batch latency: 8.06 ms
+
+ef = 64 k = 10 	num_threads = 0	batch_size = 256
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.19 sec	QPS=8433.31	Per-batch latency: 30.36 ms
+
+ef = 64 k = 10 	num_threads = 0	batch_size = 1024
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.15 sec	QPS=8733.28	Per-batch latency: 117.25 ms
+
+ef = 64 k = 10 	num_threads = 0	batch_size = 10000
+     	 R@1    R@10   R@100
+0.9938 0.9938 
+Search 10000 vectors in 1.13 sec	QPS=8878.87	Per-batch latency: 1126.27 ms
